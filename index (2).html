@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ten Years Later</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Klee+One:wght@400;600&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<style>
+/* Layout: a scrolling anime episode. Each part is a scene with a framed stage, subtitle bars, and a sky that shifts from grey-blue silence to gold reunion. */
+:root{
+  --night:#12142e;
+  --ink:#1a1b33;
+  --gold:#ffc15e;
+  --sakura:#ff9fbd;
+  --mist:#a9b3d1;
+  --snow:#ffffff;
+  --paper:#f4f0ff;
+  --panel:rgba(14,16,38,.78);
+  --sky-a:#1b2250;
+  --sky-b:#5a4a8a;
+  --f-display:'Dela Gothic One','Hiragino Sans','Yu Gothic','Noto Sans JP',system-ui,sans-serif;
+  --f-body:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',system-ui,sans-serif;
+  --f-hand:'Klee One','Segoe Print','Bradley Hand',cursive;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--night);color:var(--snow);
+  font:500 17px/1.7 var(--f-body);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0;
+  overflow-x:hidden;
+}
+.sky{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,var(--sky-a),var(--sky-b))}
+#fx{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
+main{position:relative;z-index:2;max-width:880px;margin:0 auto}
+
+.top{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  background:linear-gradient(180deg,rgba(10,12,32,.82),rgba(10,12,32,0));
+  font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+}
+.top .ep{font-family:var(--f-display);color:var(--gold);letter-spacing:.08em}
+.top #label{min-width:0;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--snow);opacity:.9}
+.top .jp{font-family:var(--f-display);color:var(--sakura);letter-spacing:0}
+.bar{position:fixed;left:0;right:0;bottom:0;height:4px;z-index:21;background:rgba(255,255,255,.12)}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sakura),var(--gold))}
+
+.scene{display:flex;flex-direction:column;align-items:center;gap:26px;padding-block:clamp(72px,12vh,130px)}
+.scene:first-child{padding-top:clamp(96px,16vh,150px)}
+h1,h2{font-family:var(--f-display);font-weight:400;margin:0;text-align:center;text-wrap:balance;text-shadow:0 3px 18px rgba(0,0,0,.35)}
+h2{font-size:clamp(1.7rem,6vw,2.8rem);line-height:1.15}
+.kicker{margin:0;font-size:.85rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);text-align:center}
+.part{margin:0;font-size:.8rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);text-align:center}
+
+.title h1{font-size:clamp(2.8rem,12.5vw,7rem);line-height:1}
+.jpbig{margin:0;font-family:var(--f-display);font-size:clamp(1.4rem,5vw,2.2rem);letter-spacing:.5em;color:var(--sakura);padding-left:.5em;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.hint{margin:0;font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist);animation:nudge 2s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(6px)}}
+
+.sub{
+  margin:0;max-width:34rem;padding:12px 18px;
+  background:var(--panel);color:var(--snow);border-radius:6px;
+  font-size:1.02rem;line-height:1.6;text-align:center;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border-bottom:2px solid rgba(255,193,94,.55);
+}
+.subs{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+
+.stage{
+  position:relative;width:min(100%,760px);overflow:hidden;
+  padding:96px 12px 0;border-radius:14px;
+  border:2px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.07);
+  --dist:min(24vw,190px);
+}
+.stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:var(--ground,#3a8a5c);opacity:.85;pointer-events:none}
+.cast{position:relative;z-index:1;display:flex;justify-content:center;align-items:flex-end;gap:clamp(6px,3vw,28px);padding-bottom:20px}
+.cast.free{padding-bottom:0}
+.chr{
+  position:relative;width:clamp(84px,22vw,150px);flex:none;
+  background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:center;
+}
+.chr:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:10px}
+.chr .art{display:block}
+.chr svg{display:block;width:100%;height:auto;overflow:visible;transition:transform .2s ease}
+.chr:hover svg{transform:translateY(-4px)}
+.chr .name{display:block;margin-top:2px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.bubble{
+  position:absolute;bottom:100%;left:50%;transform:translateX(-50%);z-index:5;
+  width:max-content;max-width:min(210px,56vw);margin-bottom:4px;
+  background:var(--snow);color:var(--ink);padding:8px 12px;border-radius:14px;
+  font-size:.88rem;line-height:1.4;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.3);
+}
+.bubble::after{content:"";position:absolute;top:100%;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:var(--snow)}
+.stage[data-move] .chr{transition:transform .25s linear}
+.stage[data-move] .chr[data-who="me"]{transform:translateX(calc(var(--s,0) * var(--dist) * -1))}
+.stage[data-move] .chr:not([data-who="me"]){transform:translateX(calc(var(--s,0) * var(--dist)))}
+.sun{position:absolute;top:18px;right:8%;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#fff6c9 0 40%,rgba(255,224,130,.0) 72%);}
+
+.window{
+  position:relative;width:min(100%,420px);padding:18px 18px 0;border-radius:16px 16px 0 0;
+  border:3px solid rgba(255,255,255,.35);border-bottom:0;background:rgba(10,14,30,.35);
+}
+.window .cast{padding-bottom:0}
+.counter{margin:0;text-align:center;font-family:var(--f-display);font-size:clamp(2.4rem,10vw,4.4rem);line-height:1;color:var(--snow);text-shadow:0 3px 18px rgba(0,0,0,.4);font-variant-numeric:tabular-nums}
+.counter small{display:block;margin-top:8px;font:500 .8rem/1 var(--f-body);letter-spacing:.24em;text-transform:uppercase;color:var(--mist)}
+
+.paper{
+  width:min(100%,600px);padding:clamp(22px,5vw,40px);border-radius:4px;
+  background:var(--paper);color:#2a2448;font-family:var(--f-hand);font-size:clamp(1.05rem,3.4vw,1.25rem);line-height:1.85;
+  box-shadow:0 18px 50px rgba(0,0,0,.4);transform:rotate(-.6deg);
+}
+.paper p{margin:0 0 14px}
+.paper .to{font-weight:600;font-size:1.2em}
+.paper .from{text-align:right;margin:20px 0 0;font-weight:600}
+
+.years{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;width:100%}
+.yc{min-width:0;padding:16px 16px 18px;border-radius:10px;background:var(--panel);display:flex;flex-direction:column;gap:6px}
+.yc b{font-family:var(--f-display);font-weight:400;font-size:.9rem;letter-spacing:.06em;color:var(--gold)}
+.yc span{font-size:.98rem;line-height:1.5}
+.yc.last{background:var(--gold);color:#2a1f2d}
+.yc.last b{color:#7a2e4a}
+
+.next{width:min(100%,560px);padding:26px clamp(18px,4vw,30px);border-radius:12px;background:var(--panel);border:1px solid rgba(255,255,255,.2)}
+.next .lab{margin:0;font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:var(--sakura)}
+.next h3{margin:6px 0 16px;font-family:var(--f-display);font-weight:400;font-size:clamp(1.3rem,4.6vw,1.8rem);line-height:1.2}
+.todo{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.todo label{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;background:rgba(255,255,255,.06);min-width:0}
+.todo label:hover{background:rgba(255,255,255,.12)}
+.todo input{appearance:none;-webkit-appearance:none;flex:none;width:22px;height:22px;margin:0;border-radius:50%;border:2px solid var(--mist);background:transparent;display:grid;place-items:center;cursor:pointer}
+.todo input:checked{background:var(--gold);border-color:var(--gold)}
+.todo input:checked::after{content:"";width:6px;height:11px;border:solid #2a1f2d;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.todo input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.todo input:checked + span{text-decoration:line-through;text-decoration-color:var(--gold);opacity:.75}
+.done{margin:16px 0 0;font-family:var(--f-display);color:var(--gold);text-align:center;font-size:1.1rem}
+
+.credits{text-align:center;display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;padding:34px 16px;border-radius:12px;background:rgba(8,9,26,.55)}
+.credits dl{margin:0;display:flex;flex-direction:column;gap:18px}
+.credits dt{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mist)}
+.credits dd{margin:2px 0 0;font-family:var(--f-display);font-size:clamp(1.2rem,4.5vw,1.7rem);color:var(--snow)}
+.credits .thanks{max-width:28rem;margin:0;color:var(--snow)}
+.btn{
+  font:700 .9rem var(--f-body);letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 22px;border-radius:999px;border:2px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer;
+}
+.btn:hover{background:var(--gold);color:#2a1f2d}
+.btn:focus-visible{outline:3px solid var(--snow);outline-offset:3px}
+
+.rv.in{animation:rise .7s both ease-out;animation-delay:calc(var(--i,0) * 140ms)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.wv{transform-box:fill-box;transform-origin:0 100%;animation:wv 1s ease-in-out infinite alternate}
+@keyframes wv{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv.in,.wv,.hint{animation:none}
+  .stage[data-move] .chr,.chr svg{transition:none}
+}
+@media (max-width:480px){
+  body{font-size:16px}
+  .stage{padding-top:104px}
+  .top #label{font-size:.7rem}
+}
+</style>
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+
+
+<div class="sky" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header class="top">
+  <span class="ep">EP.10</span>
+  <!-- <span id="label">Title card</span> -->
+  <span class="jp" aria-hidden="true">再会</span>
+</header>
+<div class="bar" aria-hidden="true"><i id="bar"></i></div>
+
+<main>
+
+  <!-- Title card -->
+  <section class="scene title" data-label="Title card" data-fx="petal">
+    <p class="kicker">Episode 10</p>
+    <h1>The Reunion</h1>
+    <p class="jpbig" aria-hidden="true">再会</p>
+    <p class="sub">Ten years later.</p>
+    <div class="cast free">
+      <button class="chr" data-who="me" data-mood="happy"></button>
+      <button class="chr" data-who="s1" data-mood="happy" data-wave="1"></button>
+      <button class="chr" data-who="s2" data-mood="excited"></button>
+    </div>
+    <p class="hint">Tap a character, then scroll</p>
+  </section>
+
+  <!-- Part 1 -->
+  <section class="scene" data-label="Part 1 · Childhood" data-fx="none">
+    <p class="part">Part 1</p>
+    <h2>Childhood</h2>
+    <div class="stage" style="--ground:#4caf6a">
+      <span class="sun" aria-hidden="true"></span>
+      <div class="cast">
+        <button class="chr" data-who="me" data-mood="happy"></button>
+        <button class="chr" data-who="s1" data-mood="excited"></button>
+        <button class="chr" data-who="s2" data-mood="happy" data-wave="1"></button>
+      </div>
+    </div>
+    <div class="subs">
+      <p class="sub rv" style="--i:0">We shared everything. Snacks, secrets, and the same few jokes, over and over.</p>
+      <p class="sub rv" style="--i:1">Back then, ten years sounded like forever. We never thought we would have to count them.</p>
+    </div>
+  </section>
+
+  <!-- Part 2 -->
+  <section class="scene" data-label="Part 2 · The Goodbye" data-fx="firefly">
+    <p class="part">Part 2</p>
+    <h2>The Goodbye</h2>
+    <div class="stage" data-move="apart" data-near="happy" data-far="sad" style="--ground:#7a4a6e">
+      <div class="cast">
+        <button class="chr" data-who="me" data-mood="happy" data-wave="1"></button>
+        <button class="chr" data-who="s1" data-mood="happy"></button>
+        <button class="chr" data-who="s2" data-mood="happy" data-wave="1"></button>
+      </div>
+    </div>
+    <div class="subs">
+      <p class="sub rv" style="--i:0">Nobody planned it. Life moved us in different directions, and we waved like it was only for now.</p>
+      <p class="sub rv" style="--i:1">Scroll slowly. Watch how far apart we drift.</p>
+    </div>
+  </section>
+
+  <!-- Part 3 -->
+  <section class="scene" data-label="Part 3 · The Long Silence" data-fx="rain">
+    <p class="part">Part 3</p>
+    <h2>The Long Silence</h2>
+    <div class="window">
+      <div class="cast">
+        <button class="chr" data-who="me" data-mood="sad"></button>
+      </div>
+    </div>
+    <p class="counter" id="days">3,652<small>days apart</small></p>
+    <div class="subs">
+      <p class="sub rv" style="--i:0">I kept both of your names in my head the whole time.</p>
+      <p class="sub rv" style="--i:1">Every year I wondered if you still remembered me too.</p>
+    </div>
+  </section>
+
+  <!-- Part 4 -->
+  <section class="scene" data-label="Part 4 · We Found Each Other" data-fx="petal">
+    <p class="part">Part 4</p>
+    <h2>10 years. Same us.</h2>
+    <div class="stage" data-move="together" data-near="happy" data-far="excited" style="--ground:#d98a4a">
+      <div class="cast">
+        <button class="chr" data-who="me" data-mood="excited"></button>
+        <button class="chr" data-who="s1" data-mood="excited"></button>
+        <button class="chr" data-who="s2" data-mood="excited"></button>
+      </div>
+    </div>
+    <div class="subs">
+      <p class="sub rv" style="--i:0">And then you were there. Older, taller, and still exactly you.</p>
+      <p class="sub rv" style="--i:1">It felt like we had only gone for a long walk and finally come back.</p>
+    </div>
+  </section>
+
+  <!-- Letter -->
+  <section class="scene" data-label="A letter" data-fx="lantern">
+    <p class="part">Interlude</p>
+    <h2>A letter from me</h2>
+    <article class="paper">
+      <p class="to rv" style="--i:0">Dear M and S,</p>
+      <p class="rv" style="--i:1">I do not know how to say this without smiling like a fool, so I am writing it down.</p>
+      <p class="rv" style="--i:2">For ten years I carried you both with me. In my head you stayed the same age, laughing at the same silly things.</p>
+      <p class="rv" style="--i:3">Thank you for remembering me. Thank you for being the kind of friends who stay, even from far away.</p>
+      <p class="rv" style="--i:4">I am not letting this go again. Whatever comes next, I want you both in it.</p>
+      <p class="from rv" style="--i:5">Always yours,<br>R</p>
+    </article>
+  </section>
+
+  <!-- Ten years -->
+  <section class="scene" data-label="Ten years in ten cards" data-fx="petal">
+    <p class="part">Recap</p>
+    <h2>Ten years in ten cards</h2>
+    <div class="years">
+      <div class="yc rv" style="--i:0"><b>Year 1</b><span>I kept looking for you in every crowd.</span></div>
+      <div class="yc rv" style="--i:1"><b>Year 2</b><span>New place, new faces. Nothing felt familiar yet.</span></div>
+      <div class="yc rv" style="--i:2"><b>Year 3</b><span>I told someone about you two and talked for an hour.</span></div>
+      <div class="yc rv" style="--i:3"><b>Year 4</b><span>Our old jokes still made me laugh when I was alone.</span></div>
+      <div class="yc rv" style="--i:4"><b>Year 5</b><span>I almost reached out. I did not know what to say.</span></div>
+      <div class="yc rv" style="--i:5"><b>Year 6</b><span>I grew up a little. You were still in my stories.</span></div>
+      <div class="yc rv" style="--i:6"><b>Year 7</b><span>Some days I missed you so much it was almost funny.</span></div>
+      <div class="yc rv" style="--i:7"><b>Year 8</b><span>I wondered what you looked like now.</span></div>
+      <div class="yc rv" style="--i:8"><b>Year 9</b><span>I hoped, quietly, that we would meet again.</span></div>
+      <div class="yc last rv" style="--i:9"><b>Year 10</b><span>And we did.</span></div>
+    </div>
+    <p class="sub rv">Your turn. Tell me what your ten years looked like.</p>
+  </section>
+
+  <!-- Next episode -->
+  <section class="scene" data-label="Next episode" data-fx="petal">
+    <p class="part">Preview</p>
+    <h2>Next episode</h2>
+    <div class="next">
+      <p class="lab">Coming soon</p>
+      <h3>Episode 11: Making Up for Lost Time</h3>
+      <ul class="todo" id="todo">
+        <li><label><input type="checkbox"><span>Eat together like old times</span></label></li>
+        <li><label><input type="checkbox"><span>Take the photos we never had</span></label></li>
+        <li><label><input type="checkbox"><span>Anime marathon, snacks included</span></label></li>
+        <li><label><input type="checkbox"><span>A trip, just the three of us</span></label></li>
+        <li><label><input type="checkbox"><span>Stay up all night talking</span></label></li>
+        <li><label><input type="checkbox"><span>Never lose touch again</span></label></li>
+      </ul>
+      <p class="done" id="done" hidden>Episode 11 starts today.</p>
+    </div>
+  </section>
+
+  <!-- Credits -->
+  <section class="scene" data-label="Credits" data-fx="none" id="credits">
+    <div class="credits">
+      <p class="kicker">End of Episode 10</p>
+      <dl>
+        <div><dt>Starring</dt><dd>R · M · S</dd></div>
+        <div><dt>Written by</dt><dd>R</dd></div>
+        <div><dt>Theme song</dt><dd>The one we all know</dd></div>
+        <div><dt>Special thanks</dt><dd>For finding me again</dd></div>
+      </dl>
+      <p class="thanks">Ten years apart, and it took one day to feel like nothing changed. See you in the next episode.</p>
+      <button class="btn" id="again" type="button">Watch again</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ===== Edit these: names, roles and what each character says when tapped ===== */
+const CAST = {
+  me: { name:'R',  hair:'#2a2c52', eye:'#2d4a7a', outfit:'#3d86d1', pants:'#2b3a67', style:'messy', skirt:false },
+  s1: { name:'M', hair:'#8a4a3a', eye:'#6b3a2a', outfit:'#f58aa8', pants:'#7a5aa0', style:'long',  skirt:true  },
+  s2: { name:'S', hair:'#5b2a6b', eye:'#3a2250', outfit:'#f2c14e', pants:'#2f9e94', style:'bob',   skirt:true  }
+};
+const LINES = {
+  me: ['I am the one who always got lost, and you always found me.','I missed you two more than I ever said.','Ten years and I still remember every joke.'],
+  s1: ['Tell me everything. Start from year one.','I knew you would come back.','You still laugh exactly the same.'],
+  s2: ['We have so much food to catch up on.','Did you really think we forgot you?','Group photo. Right now. No excuses.']
+};
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v, a=0, b=1) => Math.min(b, Math.max(a, v));
+
+/* ===== Original anime-style characters, drawn as SVG ===== */
+const HAIR = {
+  messy:{
+    back:'',
+    front:'M26 58 Q22 22 60 18 Q98 22 94 58 Q92 44 84 40 L80 52 L70 38 L62 52 L52 38 L44 50 L36 40 Q28 46 26 58Z'
+  },
+  long:{
+    back:'M24 58 Q20 20 60 18 Q100 20 96 58 L102 126 Q60 138 18 126Z',
+    front:'M27 58 Q24 20 60 17 Q96 20 93 58 Q88 38 70 34 Q56 44 40 38 Q30 44 27 58Z'
+  },
+  bob:{
+    back:'M24 58 Q22 20 60 18 Q98 20 96 58 L95 94 Q60 102 25 94Z',
+    front:'M27 58 Q24 20 60 17 Q96 20 93 58 L90 44 Q60 34 30 44Z'
+  }
+};
+
+function svgChar(c, mood, wave){
+  const skin = '#f3c7a2', ink = '#2a1f2d', ex = [46, 74];
+  const small = mood === 'shy';
+  const open = ex.map(x =>
+    `<ellipse cx="${x}" cy="63" rx="6" ry="${small?5:8}" fill="${c.eye}"/>` +
+    `<ellipse cx="${x}" cy="64" rx="3.2" ry="${small?3:5}" fill="${ink}"/>` +
+    `<circle cx="${x+2}" cy="${small?62:60}" r="${mood==='excited'?3.2:2.2}" fill="#fff"/>` +
+    `<circle cx="${x-2}" cy="66" r="1" fill="#fff"/>`).join('');
+  const closed = ex.map(x =>
+    `<path d="M${x-6} 65 Q${x} 56 ${x+6} 65" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`).join('');
+  let eyes = mood === 'happy' ? closed : open, brows = '', mouth = '', extra = '', blush = .35;
+  if (mood === 'happy'){
+    mouth = `<path d="M52 76 Q60 85 68 76" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linecap="round"/>`;
+    blush = .5;
+  } else if (mood === 'excited'){
+    mouth = `<path d="M52 74 Q60 92 68 74Z" fill="#c0505a" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    extra = `<path d="M100 28 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z" fill="#ffe27a"/>` +
+            `<path d="M16 40 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#ffe27a"/>`;
+    blush = .55;
+  } else if (mood === 'sad'){
+    brows = `<path d="M38 50 L53 55 M82 50 L67 55" stroke="${ink}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
+    mouth = `<path d="M53 80 Q60 73 67 80" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linecap="round"/>`;
+    extra = `<path d="M42 72 q-4 7 0 10 q4 -3 0 -10z" fill="#8fd0ff"/>`;
+    blush = .15;
+  } else if (mood === 'shy'){
+    mouth = `<path d="M55 78 Q58 80 60 78 Q62 76 65 78" fill="none" stroke="${ink}" stroke-width="2.2" stroke-linecap="round"/>`;
+    blush = .8;
+  }
+  const hair = HAIR[c.style];
+  let acc = '';
+  if (c.style === 'long') acc = `<path d="M84 26 L100 16 L100 38Z M84 26 L68 16 L68 38Z" fill="#ff6f9c"/><circle cx="84" cy="27" r="5" fill="#ffb3cb"/>`;
+  if (c.style === 'bob') acc = `<path d="M26 60 Q24 12 60 12 Q96 12 94 60" fill="none" stroke="#2f9e94" stroke-width="4" stroke-linecap="round"/><rect x="19" y="52" width="11" height="20" rx="5" fill="#2f9e94"/><rect x="90" y="52" width="11" height="20" rx="5" fill="#2f9e94"/>`;
+  const legFill = c.skirt ? skin : c.pants;
+  const skirt = c.skirt ? `<path d="M34 122 L86 122 L94 142 L26 142Z" fill="${c.pants}"/>` : '';
+  const hoodie = c.style === 'messy' ? `<path d="M52 92 L52 108 M68 92 L68 108" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>` : '';
+  const armL = `<g><path d="M38 98 Q26 110 30 124" fill="none" stroke="${c.outfit}" stroke-width="10" stroke-linecap="round"/><circle cx="30" cy="126" r="5.5" fill="${skin}"/></g>`;
+  const armUp = (side) => side === 'r'
+    ? `<g class="wv"><path d="M82 98 Q97 86 93 66" fill="none" stroke="${c.outfit}" stroke-width="10" stroke-linecap="round"/><circle cx="93" cy="63" r="5.5" fill="${skin}"/></g>`
+    : `<g><path d="M38 98 Q23 86 27 66" fill="none" stroke="${c.outfit}" stroke-width="10" stroke-linecap="round"/><circle cx="27" cy="63" r="5.5" fill="${skin}"/></g>`;
+  const armR = `<g><path d="M82 98 Q94 110 90 124" fill="none" stroke="${c.outfit}" stroke-width="10" stroke-linecap="round"/><circle cx="90" cy="126" r="5.5" fill="${skin}"/></g>`;
+  let arms;
+  if (mood === 'excited') arms = armUp('l') + armUp('r');
+  else if (wave) arms = armL + armUp('r');
+  else arms = armL + armR;
+
+  return `<svg viewBox="0 0 120 168" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.name}, ${mood}">
+    <ellipse cx="60" cy="162" rx="30" ry="5" fill="rgba(0,0,0,.25)"/>
+    ${hair.back ? `<path d="${hair.back}" fill="${c.hair}"/>` : ''}
+    <rect x="45" y="128" width="11" height="30" rx="5" fill="${legFill}"/>
+    <rect x="64" y="128" width="11" height="30" rx="5" fill="${legFill}"/>
+    <ellipse cx="50" cy="158" rx="9" ry="5" fill="${ink}"/>
+    <ellipse cx="70" cy="158" rx="9" ry="5" fill="${ink}"/>
+    ${skirt}
+    <rect x="34" y="88" width="52" height="42" rx="16" fill="${c.outfit}"/>
+    ${hoodie}
+    <circle cx="60" cy="58" r="32" fill="${skin}"/>
+    <ellipse cx="38" cy="74" rx="6" ry="3.6" fill="#ff8aa0" opacity="${blush}"/>
+    <ellipse cx="82" cy="74" rx="6" ry="3.6" fill="#ff8aa0" opacity="${blush}"/>
+    ${eyes}${brows}${mouth}
+    <path d="${hair.front}" fill="${c.hair}"/>
+    <path d="M40 30 Q60 22 80 30" stroke="rgba(255,255,255,.28)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    ${acc}${arms}${extra}
+  </svg>`;
+}
+
+function paint(el, mood){
+  el.dataset.mood = mood;
+  $('.art', el).innerHTML = svgChar(CAST[el.dataset.who], mood, el.dataset.wave === '1');
+}
+$$('.chr').forEach(el => {
+  const c = CAST[el.dataset.who];
+  el.innerHTML = '<span class="bubble" hidden></span><span class="art"></span><span class="name">' + c.name + '</span>';
+  el.setAttribute('aria-label', 'Tap to hear ' + c.name);
+  paint(el, el.dataset.mood || 'happy');
+  let n = 0;
+  el.addEventListener('click', () => {
+    const b = $('.bubble', el), lines = LINES[el.dataset.who];
+    b.textContent = lines[n++ % lines.length];
+    b.hidden = false;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { b.hidden = true; }, 3800);
+  });
+});
+
+/* ===== Sky that changes mood from scene to scene ===== */
+const SKY = [
+  ['#1b2250','#5a4a8a'], // title: twilight
+  ['#4fb3e8','#bfe8f5'], // childhood: bright day
+  ['#e0803a','#7a3f6b'], // goodbye: dusk
+  ['#2b3140','#4a5568'], // silence: grey rain
+  ['#ffb347','#ff7aa2'], // reunion: gold and pink
+  ['#2a2150','#6a3d7a'], // letter: lantern night
+  ['#3a2a5c','#b0577a'], // recap
+  ['#1c2b55','#e8a24a'], // next episode
+  ['#0d1030','#2a1d52']  // credits
+];
+const hex = h => [1,3,5].map(i => parseInt(h.slice(i, i+2), 16));
+const mix = (a, b, t) => {
+  const A = hex(a), B = hex(b);
+  return 'rgb(' + A.map((v,i) => Math.round(v + (B[i]-v)*t)).join(',') + ')';
+};
+const scenes = $$('.scene');
+const stages = $$('.stage[data-move]');
+const root = document.documentElement;
+let fxMode = 'petal', ticking = false;
+
+function update(){
+  ticking = false;
+  const vh = innerHeight, y = scrollY + vh*.5;
+  const tops = scenes.map(s => s.getBoundingClientRect().top + scrollY);
+  let idx = 0;
+  tops.forEach((t, i) => { if (t <= y) idx = i; });
+  const t = clamp((y - tops[idx]) / scenes[idx].offsetHeight);
+  const c = idx + t - .5;
+  const a = clamp(Math.floor(c), 0, SKY.length-1), b = Math.min(SKY.length-1, a+1), f = clamp(c - a);
+  root.style.setProperty('--sky-a', mix(SKY[a][0], SKY[b][0], f));
+  root.style.setProperty('--sky-b', mix(SKY[a][1], SKY[b][1], f));
+  $('#label').textContent = scenes[idx].dataset.label;
+  fxMode = scenes[idx].dataset.fx || 'none';
+  const max = document.documentElement.scrollHeight - vh;
+  $('#bar').style.width = (max > 0 ? clamp(scrollY / max) * 100 : 0) + '%';
+
+  stages.forEach(st => {
+    const r = st.getBoundingClientRect();
+    const p = clamp((vh - r.top) / (vh + r.height));
+    const s = st.dataset.move === 'apart' ? clamp((p - .25) / .35) : clamp(1 - (p - .2) / .3);
+    st.style.setProperty('--s', s.toFixed(3));
+    const want = s > .5 ? st.dataset.far : st.dataset.near;
+    $$('.chr', st).forEach(el => { if (el.dataset.mood !== want) paint(el, want); });
+  });
+}
+function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
+addEventListener('scroll', onScroll, {passive:true});
+addEventListener('resize', onScroll);
+
+/* ===== Reveal, counter and credits ===== */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+}), {threshold:.15});
+$$('.rv').forEach(el => io.observe(el));
+
+const daysEl = $('#days');
+let counted = false;
+new IntersectionObserver((es, o) => es.forEach(e => {
+  if (e.isIntersecting && !counted){
+    counted = true; o.disconnect();
+    if (reduce) return;
+    const small = '<small>days apart</small>', t0 = performance.now(), dur = 2400;
+    (function tick(now){
+      const k = clamp((now - t0) / dur), v = Math.round(3652 * (1 - Math.pow(1 - k, 3)));
+      daysEl.innerHTML = v.toLocaleString('en-US') + small;
+      if (k < 1) requestAnimationFrame(tick);
+    })(t0);
+  }
+}), {threshold:.6}).observe(daysEl);
+
+new IntersectionObserver((es, o) => es.forEach(e => {
+  if (e.isIntersecting){ burst(); o.disconnect(); }
+}), {threshold:.5}).observe($('#credits .credits'));
+
+$('#again').addEventListener('click', () => scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'}));
+
+/* ===== Next-episode list ===== */
+const boxes = $$('#todo input');
+boxes.forEach(b => b.addEventListener('change', () => {
+  const all = boxes.every(x => x.checked);
+  $('#done').hidden = !all;
+  if (all) burst();
+}));
+
+/* ===== Particles: petals, rain, fireflies, lanterns, confetti ===== */
+const cv = $('#fx'), cx = cv.getContext('2d');
+let W = 0, H = 0, dpr = 1;
+function size(){ dpr = Math.min(2, devicePixelRatio || 1); W = cv.width = innerWidth*dpr; H = cv.height = innerHeight*dpr; }
+size(); addEventListener('resize', size);
+const TARGET = {petal:36, rain:110, firefly:32, lantern:14, none:0};
+const PETAL = ['#ffb3cb','#ff9fbd','#ffd1df'];
+const CONF = ['#ffc15e','#ff9fbd','#7fd4ff','#9af0c0','#ffffff','#b79bff'];
+const P = [];
+const rnd = (a, b) => a + Math.random()*(b-a);
+
+function make(type, initial){
+  const p = {type, x:rnd(0,W), y: initial ? rnd(0,H) : -20*dpr, vx:0, vy:0, s:1, r:rnd(0,6.28), vr:0, a:1, ph:rnd(0,6.28), col:'#fff'};
+  if (type === 'petal'){ p.s = rnd(5,9)*dpr; p.vy = rnd(.6,1.5)*dpr; p.vx = rnd(-.2,.5)*dpr; p.vr = rnd(-.03,.03); p.col = PETAL[(Math.random()*3)|0]; }
+  if (type === 'rain'){ p.s = rnd(10,22)*dpr; p.vy = rnd(14,20)*dpr; p.vx = -3*dpr; p.a = rnd(.25,.55); if(!initial) p.y = rnd(-H*.2,0); }
+  if (type === 'firefly'){ p.s = rnd(2,4)*dpr; p.y = rnd(H*.2,H); }
+  if (type === 'lantern'){ p.s = rnd(14,26)*dpr; p.vy = rnd(.4,.9)*dpr; if(!initial) p.y = H + 30*dpr; p.col = Math.random()<.5 ? '#ffb347' : '#ff8a5c'; }
+  return p;
+}
+function burst(){
+  if (reduce) return;
+  for (let i = 0; i < 170; i++){
+    const p = make('confetti', false);
+    p.x = W/2 + rnd(-60,60)*dpr; p.y = H*.35;
+    const ang = rnd(-Math.PI*.95, -Math.PI*.05), sp = rnd(5,15)*dpr;
+    p.vx = Math.cos(ang)*sp; p.vy = Math.sin(ang)*sp;
+    p.s = rnd(5,10)*dpr; p.vr = rnd(-.3,.3); p.col = CONF[(Math.random()*CONF.length)|0];
+    P.push(p);
+  }
+}
+function step(){
+  cx.clearRect(0,0,W,H);
+  const counts = {};
+  for (let i = P.length-1; i >= 0; i--){
+    const p = P[i];
+    counts[p.type] = (counts[p.type]||0) + 1;
+    if (p.type !== 'confetti' && p.type !== fxMode){ p.a -= .02; if (p.a <= 0){ P.splice(i,1); continue; } }
+    if (p.type === 'petal'){ p.ph += .02; p.x += p.vx + Math.sin(p.ph)*.8*dpr; p.y += p.vy; p.r += p.vr; if (p.y > H+20){ p.y = -20; p.x = rnd(0,W); } }
+    else if (p.type === 'rain'){ p.x += p.vx; p.y += p.vy; if (p.y > H+30){ p.y = -30; p.x = rnd(0,W+100*dpr); } }
+    else if (p.type === 'firefly'){ p.ph += .012; p.x += Math.cos(p.ph*1.3)*.5*dpr; p.y += Math.sin(p.ph)*.4*dpr; }
+    else if (p.type === 'lantern'){ p.ph += .01; p.x += Math.sin(p.ph)*.3*dpr; p.y -= p.vy; if (p.y < -40){ p.y = H + 30*dpr; p.x = rnd(0,W); } }
+    else if (p.type === 'confetti'){ p.vy += .28*dpr; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; if (p.y > H+20){ P.splice(i,1); continue; } }
+    draw(p);
+  }
+  const want = TARGET[fxMode] || 0;
+  if ((counts[fxMode]||0) < want && fxMode !== 'none') P.push(make(fxMode, true));
+  requestAnimationFrame(step);
+}
+function draw(p){
+  cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r);
+  if (p.type === 'petal'){
+    cx.globalAlpha = p.a*.85; cx.fillStyle = p.col;
+    cx.beginPath(); cx.ellipse(0,0,p.s,p.s*.55,0,0,6.283); cx.fill();
+  } else if (p.type === 'rain'){
+    cx.rotate(-p.r); cx.globalAlpha = p.a; cx.strokeStyle = 'rgba(200,215,255,.9)'; cx.lineWidth = 1.4*dpr;
+    cx.beginPath(); cx.moveTo(0,0); cx.lineTo(-p.s*.2, p.s); cx.stroke();
+  } else if (p.type === 'firefly'){
+    cx.rotate(-p.r);
+    const g = cx.createRadialGradient(0,0,0,0,0,p.s*4), pulse = .55 + .45*Math.sin(p.ph*4);
+    g.addColorStop(0, 'rgba(255,240,150,' + (.95*pulse*p.a) + ')'); g.addColorStop(1, 'rgba(255,240,150,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(0,0,p.s*4,0,6.283); cx.fill();
+  } else if (p.type === 'lantern'){
+    cx.rotate(-p.r); cx.globalAlpha = p.a*.9;
+    const g = cx.createRadialGradient(0,0,0,0,0,p.s*2.2);
+    g.addColorStop(0, 'rgba(255,200,110,.55)'); g.addColorStop(1, 'rgba(255,200,110,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(0,0,p.s*2.2,0,6.283); cx.fill();
+    cx.fillStyle = p.col; cx.beginPath(); cx.roundRect(-p.s*.5,-p.s*.65,p.s,p.s*1.3,p.s*.25); cx.fill();
+  } else {
+    cx.fillStyle = p.col; cx.fillRect(-p.s/2, -p.s/3, p.s, p.s*.66);
+  }
+  cx.restore();
+}
+if (!reduce) requestAnimationFrame(step);
+
+update();
+</script>
+
+</body>
+</html>
